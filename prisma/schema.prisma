@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("CLIENT") // "CLIENT" or "ADMIN"
+  createdAt DateTime @default(now())
+
+  // Relations
+  clientProfile ClientProfile?
+}
+
+model ClientProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cpf       String   @unique
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  cep       String?
+
+  // Relations
+  documents Document[]
+  payment   Payment?
+  process   Process?
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  type      String   // "RG_FRONT", "RG_BACK", "ADDRESS"
+  fileUrl   String
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  clientId  String   @unique
+  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status    String   @default("PENDING") // "PENDING", "PAID"
+  amount    Float    @default(150.0)
+  asaasId   String?  @unique
+  createdAt DateTime @default(now())
+}
+
+model Process {
+  id             String   @id @default(cuid())
+  clientId       String   @unique
+  client         ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status         String   @default("ANALYZING") // "ANALYZING", "IN_PROGRESS", "APPROVED"
+  releaseSpecs   String?
+  releasePdfUrl  String?
+  updatedAt      DateTime @updatedAt
+}

@@ -1,0 +1,184 @@
+.lawyerGrid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+.sidebar {
+  background-color: var(--bg-tertiary);
+  border-right: 1px solid var(--border-color);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.navItem:hover, .navItem.active {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.navItem.active {
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+}
+
+.mainPanel {
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  background-color: var(--bg-tertiary);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tableSection {
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto; /* Ativa scroll horizontal para tabelas em mobile */
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataTable th, .dataTable td {
+  padding: 0.875rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  white-space: nowrap; /* Mantém largura para que role em mobile */
+}
+
+.dataTable th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.badge.pending { background: rgba(245,158,11,0.1); color: var(--warning); }
+.badge.success { background: rgba(16,185,129,0.1); color: var(--success); }
+.badge.danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+.actionBtn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+.bottomNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  justify-content: space-around;
+  z-index: 1000;
+}
+
+.bottomItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.bottomItem.active {
+  color: var(--accent-color);
+}
+
+@media (max-width: 900px) {
+  .lawyerGrid {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none; /* Escondido no mobile */
+  }
+  .bottomNav {
+    display: flex; /* Exibido no mobile */
+  }
+  .mainPanel {
+    padding: 1.5rem;
+    padding-bottom: 5rem; /* Margem pra barra inferior */
+  }
+}
