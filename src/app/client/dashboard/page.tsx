@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import styles from '../../dashboard.module.css';
 import authStyles from '../../auth.module.css';
@@ -9,11 +9,15 @@ type Step = 'docs' | 'payment' | 'track';
 
 export default function ClientDashboard() {
   const [currentStep, setCurrentStep] = useState<Step>('docs');
+  const [docSubStep, setDocSubStep] = useState<'info' | 'term' | 'uploads'>('info');
   const [processStatus, setProcessStatus] = useState<'analyzing' | 'in_progress' | 'approved'>('analyzing');
+  const [signature, setSignature] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
     cpf: '',
+    email: '',
+    phone: '',
     rg: '',
     address: '',
     city: '',
@@ -33,6 +37,50 @@ export default function ClientDashboard() {
     if (e.target.files && e.target.files[0]) {
       setFormData({ ...formData, [field]: e.target.files[0] });
     }
+  };
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const startDrawing = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#1a1a1a';
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    ctx?.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx?.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      setSignature(canvas.toDataURL('image/png'));
+    }
+  };
+
+  const clearCanvas = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+    setSignature(null);
   };
 
   const renderStepper = () => (
@@ -65,73 +113,144 @@ export default function ClientDashboard() {
         <div className={styles.panelCard}>
           {currentStep === 'docs' && (
             <div>
-              <h2 className={styles.panelTitle}>Envio de Documentação Completa</h2>
-              <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                <div className={styles.gridContent}>
-                  <div className={authStyles.formGroup}>
-                    <label className={authStyles.label}>Nome Completo</label>
-                    <input type="text" className={authStyles.input} required placeholder="Ex: João da Silva" />
+              <h2 className={styles.panelTitle} style={{ marginBottom: '1.5rem' }}>
+                {docSubStep === 'info' && '1. Seus Dados de Contato'}
+                {docSubStep === 'term' && '2. Assinatura do Termo Associativo'}
+                {docSubStep === 'uploads' && '3. Envio de Documentação'}
+              </h2>
+
+              {docSubStep === 'info' && (
+                <form onSubmit={(e) => { e.preventDefault(); setDocSubStep('term'); }}>
+                  <div className={styles.gridContent}>
+                    <div className={authStyles.formGroup}>
+                      <label className={authStyles.label}>Nome Completo / Razão Social</label>
+                      <input type="text" className={authStyles.input} required placeholder="Ex: João da Silva" value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} />
+                    </div>
+                    <div className={authStyles.formGroup}>
+                      <label className={authStyles.label}>CPF / CNPJ</label>
+                      <input type="text" className={authStyles.input} required placeholder="000.000.000-00" value={formData.cpf} onChange={(e) => setFormData({ ...formData, cpf: e.target.value })} />
+                    </div>
+                    <div className={authStyles.formGroup}>
+                      <label className={authStyles.label}>E-mail</label>
+                      <input type="email" className={authStyles.input} required placeholder="seu@email.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                    </div>
+                    <div className={authStyles.formGroup}>
+                      <label className={authStyles.label}>Telefone / WhatsApp (Contato)</label>
+                      <input type="text" className={authStyles.input} required placeholder="(00) 90000-0000" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                    </div>
                   </div>
-                  <div className={authStyles.formGroup}>
-                    <label className={authStyles.label}>CPF</label>
-                    <input type="text" className={authStyles.input} required placeholder="000.000.000-00" />
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                    <button type="submit" className={authStyles.submitBtn} style={{ maxWidth: '300px' }}>
+                      Continuar para o Termo
+                    </button>
                   </div>
-                  <div className={authStyles.formGroup}>
-                    <label className={authStyles.label}>Endereço Completo</label>
-                    <input type="text" className={authStyles.input} required placeholder="Rua, Número, Bairro" />
-                  </div>
-                  <div className={authStyles.formGroup}>
-                    <label className={authStyles.label}>CEP</label>
-                    <input type="text" className={authStyles.input} required placeholder="00000-000" />
-                  </div>
-                  
-                  <div className={styles.fullWidth}>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem' }}>Anexos de Identificação</h3>
+                </form>
+              )}
+
+              {docSubStep === 'term' && (
+                <form onSubmit={(e) => { e.preventDefault(); if (signature) setDocSubStep('uploads'); else alert('Por favor, assine o termo para continuar.'); }}>
+                  <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, textAlign: 'center', marginBottom: '1.25rem', color: '#1e293b' }}>FICHA DE INSCRIÇÃO ASSOCIATIVA / DECLARAÇÃO / AUTORIZAÇÃO</h3>
+                    <p style={{ fontSize: '0.875rem', lineHeight: '1.6', color: '#475569', marginBottom: '1.5rem', textAlign: 'justify' }}>
+                      Por meio da presente, venho requerer a minha inscrição como associado (a), desta associação.
+                      Ao assinar este instrumento, declaro estar ciente do inteiro teor do estatuto social da
+                      Associação, bem como dos direitos e deveres impostos aos membros desta instituição. Declaro
+                      que consinto com a propositura de Ação de Obrigação de Fazer com Pedido de Tutela de
+                      Urgência e Indenização por Danos Morais, para defesa de direito difuso ou coletivo, em meu
+                      nome, movida por esta associação, bem como, que me responsabilizo a efetuar os
+                      pagamentos acertados previamente.
+                    </p>
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem', fontSize: '0.85rem', color: '#1e293b' }}>
+                      <p style={{ marginBottom: '0.5rem' }}><strong>NOME / RAZÃO SOCIAL:</strong> {formData.fullName || '---'}</p>
+                      <p style={{ marginBottom: '0.5rem' }}><strong>CPF / CNPJ:</strong> {formData.cpf || '---'}</p>
+                      <p><strong>DATA:</strong> {new Date().toLocaleDateString('pt-BR')}</p>
+                    </div>
                   </div>
 
-                  <div>
-                     <label className={authStyles.label}>RG / CNH (Frente)</label>
-                     <div className={styles.uploadBox}>
-                       <span className={styles.uploadIcon}>📄</span>
-                       <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                         {formData.rgFront ? formData.rgFront.name : 'Clique para enviar imagem'}
-                       </p>
-                       <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgFront')} id="rgFront" />
-                       <label htmlFor="rgFront" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
+                  <div className={authStyles.formGroup}>
+                    <label className={authStyles.label} style={{ textAlign: 'center', display: 'block', marginBottom: '0.75rem' }}>Assine no quadro abaixo:</label>
+                    <div style={{ position: 'relative', maxWidth: '400px', margin: '0 auto' }}>
+                      <canvas 
+                        ref={canvasRef} 
+                        width="380" 
+                        height="150" 
+                        style={{ border: '2px dashed #cbd5e1', borderRadius: 'var(--radius-sm)', background: '#fff', display: 'block', cursor: 'crosshair', touchAction: 'none' }}
+                        onMouseDown={startDrawing}
+                        onMouseMove={draw}
+                        onMouseUp={stopDrawing}
+                        onMouseLeave={stopDrawing}
+                      ></canvas>
+                      <button className={authStyles.submitBtn} style={{ position: 'absolute', top: '5px', right: '5px', padding: '0.25rem 0.5rem', fontSize: '0.65rem', background: '#f1f5f9', color: '#475569', width: 'auto', border: '1px solid #e2e8f0' }} onClick={clearCanvas}>
+                        Limpar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2.5rem' }}>
+                    <button type="button" className={authStyles.submitBtn} style={{ maxWidth: '150px', backgroundColor: '#e2e8f0', color: '#1e293b' }} onClick={() => setDocSubStep('info')}>
+                      Voltar
+                    </button>
+                    <button type="submit" className={authStyles.submitBtn} style={{ maxWidth: '250px' }}>
+                      Confirmar e Assinar
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {docSubStep === 'uploads' && (
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
+                  <div className={styles.gridContent}>
+                     <div className={styles.fullWidth}>
+                       <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem' }}>Anexos de Identificação</h3>
+                     </div>
+
+                     <div>
+                        <label className={authStyles.label}>RG / CNH (Frente)</label>
+                        <div className={styles.uploadBox}>
+                          <span className={styles.uploadIcon}>📄</span>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {formData.rgFront ? formData.rgFront.name : 'Clique para enviar imagem'}
+                          </p>
+                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgFront')} id="rgFront" />
+                          <label htmlFor="rgFront" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
+                        </div>
+                     </div>
+
+                     <div>
+                        <label className={authStyles.label}>RG / CNH (Verso)</label>
+                        <div className={styles.uploadBox}>
+                          <span className={styles.uploadIcon}>📄</span>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {formData.rgBack ? formData.rgBack.name : 'Clique para enviar imagem'}
+                          </p>
+                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgBack')} id="rgBack" />
+                          <label htmlFor="rgBack" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
+                        </div>
+                     </div>
+
+                     <div className={styles.fullWidth}>
+                        <label className={authStyles.label}>Comprovante de Residência</label>
+                        <div className={styles.uploadBox}>
+                          <span className={styles.uploadIcon}>🏠</span>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {formData.proofOfAddress ? formData.proofOfAddress.name : 'Clique para enviar imagem'}
+                          </p>
+                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'proofOfAddress')} id="proofOfAddress" />
+                          <label htmlFor="proofOfAddress" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
+                        </div>
                      </div>
                   </div>
 
-                  <div>
-                     <label className={authStyles.label}>RG / CNH (Verso)</label>
-                     <div className={styles.uploadBox}>
-                       <span className={styles.uploadIcon}>📄</span>
-                       <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                         {formData.rgBack ? formData.rgBack.name : 'Clique para enviar imagem'}
-                       </p>
-                       <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgBack')} id="rgBack" />
-                       <label htmlFor="rgBack" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
-                     </div>
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                    <button type="button" className={authStyles.submitBtn} style={{ maxWidth: '150px', backgroundColor: '#e2e8f0', color: '#1e293b' }} onClick={() => setDocSubStep('term')}>
+                      Voltar
+                    </button>
+                    <button type="submit" className={authStyles.submitBtn} style={{ maxWidth: '280px' }}>
+                      Salvar e Ir para Pagamento
+                    </button>
                   </div>
-
-                  <div className={styles.fullWidth}>
-                     <label className={authStyles.label}>Comprovante de Residência</label>
-                     <div className={styles.uploadBox}>
-                       <span className={styles.uploadIcon}>🏠</span>
-                       <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                         {formData.proofOfAddress ? formData.proofOfAddress.name : 'Clique para enviar imagem'}
-                       </p>
-                       <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'proofOfAddress')} id="proofOfAddress" />
-                       <label htmlFor="proofOfAddress" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
-                     </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-                  <button type="submit" className={authStyles.submitBtn} style={{ maxWidth: '300px' }}>
-                    Salvar e Ir para Pagamento
-                  </button>
-                </div>
-              </form>
+                </form>
+              )}
             </div>
           )}
 

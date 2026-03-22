@@ -15,11 +15,12 @@ export default function LawyerDashboard() {
   const [sendWpStart, setSendWpStart] = useState(true);
   const [sendWpFinish, setSendWpFinish] = useState(true);
   const [systemLogo, setSystemLogo] = useState<File | null>(null);
+  const [chargePrice, setChargePrice] = useState('150.00');
 
   const mockClients = [
-    { id: 1, name: 'João Silva', cpf: '123.456.789-00', status: 'pending', docs: 'Completo', pay: 'Pago' },
-    { id: 2, name: 'Maria Souza', cpf: '987.654.321-11', status: 'approved', docs: 'Completo', pay: 'Pago' },
-    { id: 3, name: 'Pedro Alves', cpf: '456.789.123-22', status: 'pending', docs: 'Pendente', pay: 'Aguardando' }
+    { id: 1, name: 'João Silva', cpf: '123.456.789-00', email: 'joao@email.com', phone: '(11) 98888-8888', status: 'pending', docs: 'Completo', pay: 'Pago' },
+    { id: 2, name: 'Maria Souza', cpf: '987.654.321-11', email: 'maria@email.com', phone: '(11) 97777-7777', status: 'approved', docs: 'Completo', pay: 'Pago' },
+    { id: 3, name: 'Pedro Alves', cpf: '456.789.123-22', email: 'pedro@email.com', phone: '(11) 96666-6666', status: 'pending', docs: 'Pendente', pay: 'Aguardando' }
   ];
 
   const renderOverview = () => (
@@ -99,20 +100,30 @@ export default function LawyerDashboard() {
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '1rem' }}>
             Gerenciar: {selectedClient.name}
           </h2>
-          
-          <div className={cardStyles.gridContent} style={{ marginBottom: '2rem' }}>
-             <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>CPF</p>
-               <p style={{ fontWeight: 600 }}>{selectedClient.cpf}</p>
-             </div>
-             <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Status Pagamento</p>
-               <p style={{ fontWeight: 600, color: 'var(--success)' }}>{selectedClient.pay}</p>
-             </div>
-          </div>
+                    <div className={cardStyles.gridContent} style={{ marginBottom: '2rem' }}>
+              <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>CPF</p>
+                <p style={{ fontWeight: 600 }}>{selectedClient.cpf}</p>
+              </div>
+              <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>E-mail</p>
+                <p style={{ fontWeight: 600 }}>{selectedClient.email || 'Não informado'}</p>
+              </div>
+              <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Contato</p>
+                <p style={{ fontWeight: 600 }}>{selectedClient.phone || 'Não informado'}</p>
+              </div>
+              <div style={{ backgroundColor: 'var(--bg-primary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Status Pagamento</p>
+                <p style={{ fontWeight: 600, color: selectedClient.pay === 'Pago' ? 'var(--success)' : 'var(--warning)' }}>{selectedClient.pay}</p>
+              </div>
+           </div>
 
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Documentos Enviados</h3>
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+             <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#e0f2fe', color: '#0284c7', borderColor: '#bae6fd' }} onClick={() => alert('Visualizando Termo Assinado Digitalmente')}>
+                📝 Ver Termo Assinado
+             </button>
              <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 📂 Baixar RG Frente
              </button>
@@ -291,6 +302,31 @@ export default function LawyerDashboard() {
 
           <button type="submit" className={formStyles.submitBtn} style={{ maxWidth: '200px' }}>
              Salvar Logo
+          </button>
+        </form>
+
+        <hr style={{ margin: '2rem 0', borderColor: 'var(--border-color)', opacity: 0.5 }} />
+
+        <form onSubmit={async (e) => { 
+          e.preventDefault(); 
+          alert('Taxa de processamento salva! (Para funcionar no checkout do cliente de forma dinâmica, o endpoint cria a cobrança com essa variável)');
+        }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Custos e Valores</h3>
+          
+          <div className={formStyles.formGroup} style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
+             <label className={formStyles.label}>Taxa de Processamento (R$)</label>
+             <input 
+               type="number" 
+               className={formStyles.input} 
+               value={chargePrice} 
+               step="0.01" 
+               onChange={(e) => setChargePrice(e.target.value)} 
+               placeholder="150.00" 
+             />
+          </div>
+
+          <button type="submit" className={formStyles.submitBtn} style={{ maxWidth: '200px' }}>
+             Salvar Taxa
           </button>
         </form>
       </div>
