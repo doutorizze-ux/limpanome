@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { execSync } from 'child_process';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const list: any[] = await prisma.$queryRaw`SELECT * FROM Settings LIMIT 1`;

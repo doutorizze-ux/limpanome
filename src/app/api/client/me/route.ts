@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
@@ -7,7 +9,7 @@ export async function GET(req: Request) {
     const userId = searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json({ error: 'ID do usuário é obrigatório.' }, { status: 400 });
+      return NextResponse.json({ error: 'ID do usuÃ¡rio Ã© obrigatÃ³rio.' }, { status: 400 });
     }
 
     const client = await prisma.clientProfile.findUnique({
@@ -20,7 +22,7 @@ export async function GET(req: Request) {
     });
 
     if (!client) {
-      // Se não houver perfil ainda, o status é "documentos pendentes"
+      // Se nÃ£o houver perfil ainda, o status Ã© "documentos pendentes"
       return NextResponse.json({ 
         status: 'docs', 
         processStatus: 'analyzing',
