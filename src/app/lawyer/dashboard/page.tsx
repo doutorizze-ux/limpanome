@@ -291,7 +291,9 @@ export default function LawyerDashboard() {
                headers: { 'Content-Type': 'application/json' },
                body: JSON.stringify({ logoBase64: base64 })
              });
+             const data = await res.json();
              if (res.ok) alert('Logo atualizada com sucesso! Recarregue a página para ver o resultado.');
+             else alert('Erro ao salvar logo: ' + (data.error || 'Erro desconhecido'));
           };
         }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Identidade Visual</h3>
@@ -326,8 +328,9 @@ export default function LawyerDashboard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chargePrice })
           });
+          const data = await res.json();
           if (res.ok) alert('Taxa de processamento salva com sucesso!');
-          else alert('Erro ao salvar taxa.');
+          else alert('Erro ao salvar taxa: ' + (data.error || 'Erro desconhecido'));
         }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Custos e Valores</h3>
           

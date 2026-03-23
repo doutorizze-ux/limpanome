@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { execSync } from 'child_process';
 
 export async function GET() {
   try {
     const settings = await prisma.settings.findFirst();
     return NextResponse.json(settings || { chargePrice: '150.00', logoBase64: null });
-  } catch (error) {
-    return NextResponse.json({ chargePrice: '150.00', logoBase64: null });
+  } catch (error: any) {
+    console.log('Tentando sincronizar banco...');
+    try {
+      // Auto Sync permanente para garantir tabelas
+      execSync('npx prisma db push --accept-data-loss');
+      const settings = await prisma.settings.findFirst();
+      return NextResponse.json(settings || { chargePrice: '150.00', logoBase64: null });
+    } catch (err) {
+      return NextResponse.json({ chargePrice: '150.00', logoBase64: null, error: 'Erro ao ler dados' });
+    }
   }
 }
 
