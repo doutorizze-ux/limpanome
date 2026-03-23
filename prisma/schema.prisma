@@ -65,3 +65,9 @@ model Process {
   releasePdfUrl  String?
   updatedAt      DateTime @updatedAt
 }
+
+model Settings {
+  id           String @id @default(cuid())
+  chargePrice  String @default("150.00")
+  logoBase64   String?
+}
