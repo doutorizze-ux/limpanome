@@ -13,11 +13,15 @@ export default function ClientDashboard() {
   const [processStatus, setProcessStatus] = useState<'analyzing' | 'in_progress' | 'approved'>('analyzing');
   const [signature, setSignature] = useState<string | null>(null);
   const [chargePrice, setChargePrice] = useState('150,00');
+  const [logoBase64, setLogoBase64] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/settings')
       .then(r => r.json())
-      .then(data => { if (data.chargePrice) setChargePrice(data.chargePrice); })
+      .then(data => { 
+        if (data.chargePrice) setChargePrice(data.chargePrice); 
+        if (data.logoBase64) setLogoBase64(data.logoBase64);
+      })
       .catch(console.error);
 
     const uId = localStorage.getItem('user_id');
@@ -155,7 +159,7 @@ export default function ClientDashboard() {
     <div className={styles.dashboardContainer}>
       <nav className={styles.navbar}>
          <div className={styles.logo} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <img src="/logo.png" alt="Logo" style={{ height: '32px', width: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <img src={logoBase64 || '/logo.png'} alt="Logo" style={{ height: '32px', width: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             <span>🛡️ Limpa Nome</span>
          </div>
          <div className={styles.userProfile}>👤 {formData.fullName || 'Cliente'}</div>

@@ -282,10 +282,17 @@ export default function LawyerDashboard() {
         <form onSubmit={async (e) => { 
           e.preventDefault(); 
           if (!systemLogo) { alert('Escolha uma logo para salvar!'); return; }
-          const formData = new FormData();
-          formData.append('logo', systemLogo);
-          const res = await fetch('/api/admin/settings/logo', { method: 'POST', body: formData });
-          if (res.ok) alert('Logo atualizada com sucesso! Recarregue a página para ver o resultado.');
+          const reader = new FileReader();
+          reader.readAsDataURL(systemLogo);
+          reader.onloadend = async () => {
+             const base64 = reader.result as string;
+             const res = await fetch('/api/admin/settings', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ logoBase64: base64 })
+             });
+             if (res.ok) alert('Logo atualizada com sucesso! Recarregue a página para ver o resultado.');
+          };
         }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Identidade Visual</h3>
           
