@@ -13,6 +13,7 @@ export async function GET(req: Request) {
     const client = await prisma.clientProfile.findUnique({
       where: { userId },
       include: {
+        user: true,
         process: true,
         payment: true
       }
