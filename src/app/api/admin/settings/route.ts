@@ -8,6 +8,12 @@ export async function GET() {
     const settings = list[0];
     return NextResponse.json(settings || { chargePrice: '150.00', logoBase64: null });
   } catch (error: any) {
+    if (error.message?.includes('no such table')) {
+       try {
+          await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS Settings (id TEXT PRIMARY KEY NOT NULL, chargePrice TEXT NOT NULL DEFAULT '150.00', logoBase64 TEXT)`;
+          return NextResponse.json({ chargePrice: '150.00', logoBase64: null, message: 'Criando tabela...' });
+       } catch (e) {}
+    }
     return NextResponse.json({ chargePrice: '150.00', logoBase64: null });
   }
 }
@@ -16,8 +22,15 @@ export async function POST(req: Request) {
   try {
     const { chargePrice, logoBase64 } = await req.json();
 
-    // Consulta direta sem depender do Proxy do Prisma
-    const existingList: any[] = await prisma.$queryRaw`SELECT * FROM Settings LIMIT 1`;
+    let existingList: any[] = [];
+    try {
+      existingList = await prisma.$queryRaw`SELECT * FROM Settings LIMIT 1`;
+    } catch (error: any) {
+      if (error.message?.includes('no such table')) {
+        await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS Settings (id TEXT PRIMARY KEY NOT NULL, chargePrice TEXT NOT NULL DEFAULT '150.00', logoBase64 TEXT)`;
+      }
+    }
+    
     const existing = existingList[0];
 
     if (existing) {
