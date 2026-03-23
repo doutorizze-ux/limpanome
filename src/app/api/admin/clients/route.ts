@@ -20,7 +20,7 @@ export async function GET() {
       name: client.user.name,
       email: client.user.email,
       phone: client.phone || 'Não inf.',
-      cpf: client.cpf,
+      cpf: client.cpf.startsWith('PENDENTE_') ? 'Aguardando' : client.cpf,
       status: client.process?.status || 'ANALYZING',
       docs: client.documents.length > 0 ? 'Completo' : 'Termo Assinado',
       pay: client.payment?.status === 'PAID' ? 'Pago' : 'Aguardando',

@@ -25,6 +25,11 @@ export default function LawyerDashboard() {
       .then(r => r.json())
       .then(data => { setClients(data); setLoading(false); })
       .catch(console.error);
+
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(data => { if (data.chargePrice) setChargePrice(data.chargePrice); })
+      .catch(console.error);
   }, []);
 
   const renderOverview = () => (
@@ -309,7 +314,13 @@ export default function LawyerDashboard() {
 
         <form onSubmit={async (e) => { 
           e.preventDefault(); 
-          alert('Taxa de processamento salva! (Para funcionar no checkout do cliente de forma dinâmica, o endpoint cria a cobrança com essa variável)');
+          const res = await fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chargePrice })
+          });
+          if (res.ok) alert('Taxa de processamento salva com sucesso!');
+          else alert('Erro ao salvar taxa.');
         }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Custos e Valores</h3>
           

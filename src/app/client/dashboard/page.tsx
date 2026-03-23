@@ -12,8 +12,14 @@ export default function ClientDashboard() {
   const [docSubStep, setDocSubStep] = useState<'info' | 'term' | 'uploads'>('info');
   const [processStatus, setProcessStatus] = useState<'analyzing' | 'in_progress' | 'approved'>('analyzing');
   const [signature, setSignature] = useState<string | null>(null);
+  const [chargePrice, setChargePrice] = useState('150,00');
 
   useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(data => { if (data.chargePrice) setChargePrice(data.chargePrice); })
+      .catch(console.error);
+
     const uId = localStorage.getItem('user_id');
     if (uId) {
       fetch(`/api/client/me?userId=${uId}`)
@@ -148,8 +154,11 @@ export default function ClientDashboard() {
   return (
     <div className={styles.dashboardContainer}>
       <nav className={styles.navbar}>
-        <div className={styles.logo}>🛡️ Limpa Nome</div>
-        <div className={styles.userProfile}>👤 {formData.fullName || 'Cliente'}</div>
+         <div className={styles.logo} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <img src="/logo.png" alt="Logo" style={{ height: '32px', width: 'auto' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <span>🛡️ Limpa Nome</span>
+         </div>
+         <div className={styles.userProfile}>👤 {formData.fullName || 'Cliente'}</div>
       </nav>
 
       <main className={styles.mainContent}>
@@ -249,8 +258,8 @@ export default function ClientDashboard() {
             <div style={{ textAlign: 'center', padding: '2rem 0' }}>
               <h2 className={styles.panelTitle}>Pagamento para Liberação</h2>
               <div style={{ display: 'inline-block', padding: '1.5rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-primary)', marginBottom: '2rem' }}>
-                <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>R$ 150,00</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Taxa única de processamento</p>
+                 <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>R$ {chargePrice}</p>
+                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Taxa única de processamento</p>
               </div>
 
               <div style={{ maxWidth: '400px', margin: '0 auto' }}>
