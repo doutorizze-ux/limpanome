@@ -4,18 +4,11 @@ import { execSync } from 'child_process';
 
 export async function GET() {
   try {
-    const settings = await prisma.settings.findFirst();
+    const list: any[] = await prisma.$queryRaw`SELECT * FROM Settings LIMIT 1`;
+    const settings = list[0];
     return NextResponse.json(settings || { chargePrice: '150.00', logoBase64: null });
   } catch (error: any) {
-    console.log('Tentando sincronizar banco...');
-    try {
-      // Auto Sync permanente para garantir tabelas
-      execSync('npx prisma db push --accept-data-loss');
-      const settings = await prisma.settings.findFirst();
-      return NextResponse.json(settings || { chargePrice: '150.00', logoBase64: null });
-    } catch (err) {
-      return NextResponse.json({ chargePrice: '150.00', logoBase64: null, error: 'Erro ao ler dados' });
-    }
+    return NextResponse.json({ chargePrice: '150.00', logoBase64: null });
   }
 }
 
@@ -23,29 +16,22 @@ export async function POST(req: Request) {
   try {
     const { chargePrice, logoBase64 } = await req.json();
 
-    const dbSettings = (prisma as any).settings || (prisma as any).Settings;
-
-    if (!dbSettings) {
-       throw new Error('Accessor Prisma Settings não encontrado.');
-    }
-
-    const existing = await dbSettings.findFirst();
+    // Consulta direta sem depender do Proxy do Prisma
+    const existingList: any[] = await prisma.$queryRaw`SELECT * FROM Settings LIMIT 1`;
+    const existing = existingList[0];
 
     if (existing) {
-      await dbSettings.update({
-        where: { id: existing.id },
-        data: {
-          chargePrice: chargePrice !== undefined ? chargePrice : existing.chargePrice,
-          logoBase64: logoBase64 !== undefined ? logoBase64 : existing.logoBase64
-        }
-      });
+      const price = chargePrice !== undefined ? chargePrice : existing.chargePrice;
+      const logo = logoBase64 !== undefined ? logoBase64 : existing.logoBase64;
+      
+      await prisma.$executeRaw`UPDATE Settings SET chargePrice = ${price}, logoBase64 = ${logo} WHERE id = ${existing.id}`;
     } else {
-      await dbSettings.create({
-        data: {
-          chargePrice: chargePrice || '150.00',
-          logoBase64: logoBase64 || ''
-        }
-      });
+      const price = chargePrice || '150.00';
+      const logo = logoBase64 || '';
+      // Cria ID aleatório se precisar
+      const newId = Math.random().toString(36).substring(2);
+      
+      await prisma.$executeRaw`INSERT INTO Settings (id, chargePrice, logoBase64) VALUES (${newId}, ${price}, ${logo})`;
     }
 
     return NextResponse.json({ success: true, message: 'Configurações salvas!' });
