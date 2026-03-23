@@ -130,14 +130,27 @@ export default function LawyerDashboard() {
 
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Termo Assinado</h3>
           <div style={{ marginBottom: '2rem' }}>
-             {selectedClient.signature && selectedClient.signature.startsWith('data:image') ? (
-                <div style={{ padding: '1rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-sm)', maxWidth: '400px' }}>
-                   <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>Assinatura Digital:</p>
-                   <img src={selectedClient.signature} alt="Assinatura" style={{ width: '100%', height: 'auto', border: '1px solid #f1f5f9' }} />
-                </div>
-             ) : (
-                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Assinatura digital não vinculada ou indisponível.</p>
-             )}
+              {selectedClient.signature && selectedClient.signature.startsWith('data:image') ? (
+                 <div style={{ padding: '1.5rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-sm)', maxWidth: '600px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, textAlign: 'center', marginBottom: '1rem', color: '#1e293b' }}>FICHA DE INSCRIÇÃO ASSOCIATIVA / DECLARAÇÃO</h4>
+                    <p style={{ fontSize: '0.75rem', lineHeight: '1.5', color: '#475569', marginBottom: '1rem', textAlign: 'justify' }}>
+                       Por meio da presente, venho requerer a minha inscrição como associado (a), desta associação.
+                       Ao assinar este instrumento, declaro estar ciente do inteiro teor do estatuto social da
+                       Associação, bem como dos direitos e deveres impostos aos membros desta instituição. Declaro
+                       que consinto com a propositura de Ação de Obrigação de Fazer... [Acordo Associativo]
+                    </p>
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem', fontSize: '0.75rem', color: '#1e293b' }}>
+                       <p style={{ marginBottom: '0.25rem' }}><strong>Nome:</strong> {selectedClient.name}</p>
+                       <p style={{ marginBottom: '0.25rem' }}><strong>CPF:</strong> {selectedClient.cpf}</p>
+                    </div>
+                    <div style={{ marginTop: '1rem', borderTop: '1px dashed #e2e8f0', paddingTop: '1rem', textAlign: 'center' }}>
+                       <p style={{ fontSize: '0.65rem', color: '#64748b', marginBottom: '0.5rem' }}>Assinatura Digital:</p>
+                       <img src={selectedClient.signature} alt="Assinatura" style={{ width: '100%', maxWidth: '280px', height: 'auto', border: '1px solid #f1f5f9', display: 'inline-block' }} />
+                    </div>
+                 </div>
+              ) : (
+                 <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Assinatura digital não vinculada ou indisponível.</p>
+              )}
           </div>
 
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Gerenciamento do Processo</h3>
