@@ -23,7 +23,8 @@ export async function GET() {
       cpf: client.cpf,
       status: client.process?.status || 'ANALYZING',
       docs: client.documents.length > 0 ? 'Completo' : 'Termo Assinado',
-      pay: client.payment?.status === 'PAID' ? 'Pago' : 'Aguardando'
+      pay: client.payment?.status === 'PAID' ? 'Pago' : 'Aguardando',
+      signature: client.signature
     }));
 
     return NextResponse.json(formattedClients);

@@ -123,20 +123,16 @@ export default function LawyerDashboard() {
               </div>
            </div>
 
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Documentos Enviados</h3>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-             <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#e0f2fe', color: '#0284c7', borderColor: '#bae6fd' }} onClick={() => alert('Visualizando Termo Assinado Digitalmente')}>
-                📝 Ver Termo Assinado
-             </button>
-             <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📂 Baixar RG Frente
-             </button>
-             <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📂 Baixar RG Verso
-             </button>
-             <button className={styles.actionBtn} style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📂 Baixar Comprovante Res.
-             </button>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Termo Assinado</h3>
+          <div style={{ marginBottom: '2rem' }}>
+             {selectedClient.signature && selectedClient.signature.startsWith('data:image') ? (
+                <div style={{ padding: '1rem', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-sm)', maxWidth: '400px' }}>
+                   <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>Assinatura Digital:</p>
+                   <img src={selectedClient.signature} alt="Assinatura" style={{ width: '100%', height: 'auto', border: '1px solid #f1f5f9' }} />
+                </div>
+             ) : (
+                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Assinatura digital não vinculada ou indisponível.</p>
+             )}
           </div>
 
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem' }}>Gerenciamento do Processo</h3>

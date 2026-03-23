@@ -13,6 +13,25 @@ export default function ClientDashboard() {
   const [processStatus, setProcessStatus] = useState<'analyzing' | 'in_progress' | 'approved'>('analyzing');
   const [signature, setSignature] = useState<string | null>(null);
 
+  useEffect(() => {
+    const uId = localStorage.getItem('user_id');
+    if (uId) {
+      fetch(`/api/client/me?userId=${uId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status) setCurrentStep(data.status);
+            if (data.processStatus) setProcessStatus(data.processStatus as any);
+            setFormData(prev => ({
+                ...prev,
+                fullName: data.fullName || '',
+                cpf: data.cpf || '',
+                phone: data.phone || ''
+            }));
+        })
+        .catch(console.error);
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
     fullName: '',
     cpf: '',
@@ -33,9 +52,35 @@ export default function ClientDashboard() {
     else if (currentStep === 'payment') setCurrentStep('track');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'rgFront' | 'rgBack' | 'proofOfAddress') => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, [field]: e.target.files[0] });
+  const handleSaveDetails = async (e: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!signature) {
+      alert('Por favor, assine o termo para continuar.');
+      return;
+    }
+
+    try {
+      const uId = localStorage.getItem('user_id');
+      if (!uId) throw new Error('Seção expirada. Faça login novamente.');
+
+      const res = await fetch('/api/client/details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: uId,
+          fullName: formData.fullName,
+          cpf: formData.cpf,
+          phone: formData.phone,
+          signature: signature
+        })
+      });
+
+      if (!res.ok) throw new Error('Falha ao salvar detalhes.');
+
+      handleNext();
+
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -104,7 +149,7 @@ export default function ClientDashboard() {
     <div className={styles.dashboardContainer}>
       <nav className={styles.navbar}>
         <div className={styles.logo}>🛡️ Limpa Nome</div>
-        <div className={styles.userProfile}>👤 cliente@email.com</div>
+        <div className={styles.userProfile}>👤 {formData.fullName || 'Cliente'}</div>
       </nav>
 
       <main className={styles.mainContent}>
@@ -116,7 +161,6 @@ export default function ClientDashboard() {
               <h2 className={styles.panelTitle} style={{ marginBottom: '1.5rem' }}>
                 {docSubStep === 'info' && '1. Seus Dados de Contato'}
                 {docSubStep === 'term' && '2. Assinatura do Termo Associativo'}
-                {docSubStep === 'uploads' && '3. Envio de Documentação'}
               </h2>
 
               {docSubStep === 'info' && (
@@ -197,60 +241,7 @@ export default function ClientDashboard() {
                 </form>
               )}
 
-              {docSubStep === 'uploads' && (
-                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-                  <div className={styles.gridContent}>
-                     <div className={styles.fullWidth}>
-                       <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '1rem' }}>Anexos de Identificação</h3>
-                     </div>
-
-                     <div>
-                        <label className={authStyles.label}>RG / CNH (Frente)</label>
-                        <div className={styles.uploadBox}>
-                          <span className={styles.uploadIcon}>📄</span>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {formData.rgFront ? formData.rgFront.name : 'Clique para enviar imagem'}
-                          </p>
-                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgFront')} id="rgFront" />
-                          <label htmlFor="rgFront" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
-                        </div>
-                     </div>
-
-                     <div>
-                        <label className={authStyles.label}>RG / CNH (Verso)</label>
-                        <div className={styles.uploadBox}>
-                          <span className={styles.uploadIcon}>📄</span>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {formData.rgBack ? formData.rgBack.name : 'Clique para enviar imagem'}
-                          </p>
-                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'rgBack')} id="rgBack" />
-                          <label htmlFor="rgBack" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
-                        </div>
-                     </div>
-
-                     <div className={styles.fullWidth}>
-                        <label className={authStyles.label}>Comprovante de Residência</label>
-                        <div className={styles.uploadBox}>
-                          <span className={styles.uploadIcon}>🏠</span>
-                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {formData.proofOfAddress ? formData.proofOfAddress.name : 'Clique para enviar imagem'}
-                          </p>
-                          <input type="file" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, 'proofOfAddress')} id="proofOfAddress" />
-                          <label htmlFor="proofOfAddress" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, cursor: 'pointer' }}></label>
-                        </div>
-                     </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
-                    <button type="button" className={authStyles.submitBtn} style={{ maxWidth: '150px', backgroundColor: '#e2e8f0', color: '#1e293b' }} onClick={() => setDocSubStep('term')}>
-                      Voltar
-                    </button>
-                    <button type="submit" className={authStyles.submitBtn} style={{ maxWidth: '280px' }}>
-                      Salvar e Ir para Pagamento
-                    </button>
-                  </div>
-                </form>
-              )}
+              {/* Uploads removed as per request */}
             </div>
           )}
 
@@ -295,13 +286,7 @@ export default function ClientDashboard() {
 
                   <div style={{ padding: '1.25rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'inline-block', backgroundColor: 'var(--bg-primary)', marginBottom: '2rem' }}>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status Atual</p>
-                    <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--warning)' }}>Em análise de documentos</p>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                     <button className={authStyles.submitBtn} style={{ maxWidth: '180px', fontSize: '0.7rem', padding: '0.5rem', background: '#e2e8f0', color: '#1e293b' }} onClick={() => setProcessStatus('in_progress')}>
-                       Simular Início de Processo
-                     </button>
+                    <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--warning)' }}>Em análise jurídica</p>
                   </div>
                 </div>
               )}
@@ -318,13 +303,7 @@ export default function ClientDashboard() {
 
                   <div style={{ padding: '1.25rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'inline-block', backgroundColor: 'var(--bg-primary)', marginBottom: '2rem' }}>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status Atual</p>
-                    <p style={{ fontSize: '1rem', fontWeight: 600, color: '#3B82F6' }}>Processo Jurídico em Divulgação</p>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                     <button className={authStyles.submitBtn} style={{ maxWidth: '180px', fontSize: '0.7rem', padding: '0.5rem', background: '#10B981', color: '#fff' }} onClick={() => setProcessStatus('approved')}>
-                       Simular Nome Limpo (Finalizado)
-                     </button>
+                    <p style={{ fontSize: '1rem', fontWeight: 600, color: '#3B82F6' }}>Processo Jurídico em Andamento</p>
                   </div>
                 </div>
               )}
