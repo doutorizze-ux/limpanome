@@ -37,6 +37,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Erro ao salvar settings:', error);
-    return NextResponse.json({ error: 'Erro ao salvar' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Erro ao salvar' }, { status: 500 });
   }
 }
