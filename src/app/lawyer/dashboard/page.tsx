@@ -23,7 +23,7 @@ export default function LawyerDashboard() {
   useEffect(() => {
     fetch('/api/admin/clients')
       .then(r => r.json())
-      .then(data => { setClients(data); setLoading(false); })
+      .then(data => { if (Array.isArray(data)) setClients(data); setLoading(false); })
       .catch(console.error);
 
     fetch('/api/admin/settings')

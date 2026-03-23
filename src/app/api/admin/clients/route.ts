@@ -17,12 +17,12 @@ export async function GET() {
 
     const formattedClients = clients.map(client => ({
       id: client.id,
-      name: client.user.name,
-      email: client.user.email,
+      name: client.user?.name || 'Sem Nome',
+      email: client.user?.email || 'N/A',
       phone: client.phone || 'Não inf.',
-      cpf: client.cpf.startsWith('PENDENTE_') ? 'Aguardando' : client.cpf,
+      cpf: client.cpf?.startsWith('PENDENTE_') ? 'Aguardando' : client.cpf || '',
       status: client.process?.status || 'ANALYZING',
-      docs: client.documents.length > 0 ? 'Completo' : 'Termo Assinado',
+      docs: client.documents?.length > 0 ? 'Completo' : 'Termo Assinado',
       pay: client.payment?.status === 'PAID' ? 'Pago' : 'Aguardando',
       signature: client.signature
     }));
