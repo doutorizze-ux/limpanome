@@ -28,12 +28,14 @@ export async function GET(req: Request) {
       });
     }
 
+    const isDocFilled = client.cpf && !client.cpf.startsWith('PENDENTE_');
+
     return NextResponse.json({
-      status: client.payment?.status === 'PAID' ? 'track' : client.cpf ? 'payment' : 'docs',
+      status: client.payment?.status === 'PAID' ? 'track' : isDocFilled ? 'payment' : 'docs',
       processStatus: client.process?.status.toLowerCase() || 'analyzing',
       paid: client.payment?.status === 'PAID',
       fullName: client.user?.name || '',
-      cpf: client.cpf || '',
+      cpf: isDocFilled ? client.cpf : '',
       phone: client.phone || '',
       releasePdfUrl: client.process?.releasePdfUrl || null
     });
