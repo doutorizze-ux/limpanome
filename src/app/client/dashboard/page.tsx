@@ -97,7 +97,7 @@ export default function ClientDashboard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  const startDrawing = (e: React.MouseEvent) => {
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -107,17 +107,41 @@ export default function ClientDashboard() {
     ctx.strokeStyle = '#1a1a1a';
     const rect = canvas.getBoundingClientRect();
     ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+    let clientX = 0;
+    let clientY = 0;
+
+    if ('touches' in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ('clientX' in e) {
+       clientX = e.clientX;
+       clientY = e.clientY;
+    }
+
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
     setIsDrawing(true);
   };
 
-  const draw = (e: React.MouseEvent) => {
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    ctx?.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+
+    let clientX = 0;
+    let clientY = 0;
+
+    if ('touches' in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ('clientX' in e) {
+       clientX = e.clientX;
+       clientY = e.clientY;
+    }
+
+    ctx?.lineTo(clientX - rect.left, clientY - rect.top);
     ctx?.stroke();
   };
 
@@ -236,6 +260,9 @@ export default function ClientDashboard() {
                         onMouseMove={draw}
                         onMouseUp={stopDrawing}
                         onMouseLeave={stopDrawing}
+                        onTouchStart={startDrawing}
+                        onTouchMove={draw}
+                        onTouchEnd={stopDrawing}
                       ></canvas>
                       <button className={authStyles.submitBtn} style={{ position: 'absolute', top: '5px', right: '5px', padding: '0.25rem 0.5rem', fontSize: '0.65rem', background: '#f1f5f9', color: '#475569', width: 'auto', border: '1px solid #e2e8f0' }} onClick={clearCanvas}>
                         Limpar
