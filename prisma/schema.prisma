@@ -25,6 +25,7 @@ model ClientProfile {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   cpf       String   @unique
   phone     String?
+  signature String?
   address   String?
   city      String?
   state     String?
