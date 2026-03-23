@@ -23,10 +23,16 @@ export async function POST(req: Request) {
   try {
     const { chargePrice, logoBase64 } = await req.json();
 
-    const existing = await prisma.settings.findFirst();
+    const dbSettings = (prisma as any).settings || (prisma as any).Settings;
+
+    if (!dbSettings) {
+       throw new Error('Accessor Prisma Settings não encontrado.');
+    }
+
+    const existing = await dbSettings.findFirst();
 
     if (existing) {
-      await prisma.settings.update({
+      await dbSettings.update({
         where: { id: existing.id },
         data: {
           chargePrice: chargePrice !== undefined ? chargePrice : existing.chargePrice,
@@ -34,7 +40,7 @@ export async function POST(req: Request) {
         }
       });
     } else {
-      await prisma.settings.create({
+      await dbSettings.create({
         data: {
           chargePrice: chargePrice || '150.00',
           logoBase64: logoBase64 || ''
