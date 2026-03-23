@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from '../../lawyer.module.css';
 import cardStyles from '../../dashboard.module.css';
 import formStyles from '../../auth.module.css';
@@ -17,11 +17,15 @@ export default function LawyerDashboard() {
   const [systemLogo, setSystemLogo] = useState<File | null>(null);
   const [chargePrice, setChargePrice] = useState('150.00');
 
-  const mockClients = [
-    { id: 1, name: 'João Silva', cpf: '123.456.789-00', email: 'joao@email.com', phone: '(11) 98888-8888', status: 'pending', docs: 'Completo', pay: 'Pago' },
-    { id: 2, name: 'Maria Souza', cpf: '987.654.321-11', email: 'maria@email.com', phone: '(11) 97777-7777', status: 'approved', docs: 'Completo', pay: 'Pago' },
-    { id: 3, name: 'Pedro Alves', cpf: '456.789.123-22', email: 'pedro@email.com', phone: '(11) 96666-6666', status: 'pending', docs: 'Pendente', pay: 'Aguardando' }
-  ];
+  const [clients, setClients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/admin/clients')
+      .then(r => r.json())
+      .then(data => { setClients(data); setLoading(false); })
+      .catch(console.error);
+  }, []);
 
   const renderOverview = () => (
     <div>
@@ -64,7 +68,7 @@ export default function LawyerDashboard() {
             </tr>
           </thead>
           <tbody>
-            {mockClients.map(client => (
+            {clients.map((client: any) => (
               <tr key={client.id}>
                 <td>{client.name}</td>
                 <td>{client.cpf}</td>
@@ -198,7 +202,7 @@ export default function LawyerDashboard() {
               </tr>
             </thead>
             <tbody>
-              {mockClients.map(client => (
+              {clients.map((client: any) => (
                 <tr key={client.id}>
                   <td>{client.name}</td>
                   <td>{client.cpf}</td>
