@@ -148,7 +148,7 @@ export default function ClientDashboard() {
               )}
 
               {docSubStep === 'term' && (
-                <form onSubmit={(e) => { e.preventDefault(); if (signature) setDocSubStep('uploads'); else alert('Por favor, assine o termo para continuar.'); }}>
+                <form onSubmit={(e) => { e.preventDefault(); if (signature) handleNext(); else alert('Por favor, assine o termo para continuar.'); }}>
                   <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '0.95rem', fontWeight: 700, textAlign: 'center', marginBottom: '1.25rem', color: '#1e293b' }}>FICHA DE INSCRIÇÃO ASSOCIATIVA / DECLARAÇÃO / AUTORIZAÇÃO</h3>
                     <p style={{ fontSize: '0.875rem', lineHeight: '1.6', color: '#475569', marginBottom: '1.5rem', textAlign: 'justify' }}>

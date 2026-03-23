@@ -24,10 +24,21 @@ export default function ClientAuth() {
     setError(null);
 
     if (isLogin) {
-      // Temporário: Login simulado
-      localStorage.setItem('user_dummy_id', 'cm00000_login_fake');
-      router.push('/client/dashboard');
-      return;
+      try {
+        const res = await fetch('/api/client/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: formData.email, password: formData.password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao realizar login.');
+        localStorage.setItem('user_id', data.userId);
+        router.push('/client/dashboard');
+        return;
+      } catch (err: any) {
+        setError(err.message);
+        return;
+      }
     }
 
     if (formData.password !== formData.confirmPassword) {
